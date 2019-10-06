@@ -288,8 +288,6 @@ int main()
     for (int i = 0; i < 100; i++) {
         start_init = __rdtsc();
         initialization(strumok);
-        next_state(strumok, false);
-        uint64_t Z1 = stream(strumok);
         fin_init = __rdtsc();
         time_values[i] = (fin_init - start_init) / CPU_FREQ; //result nanoseconds 10^(-9)
         fprintf(f_init, "%u", time_values[i]);
@@ -298,6 +296,7 @@ int main()
 
     for (int i = 0; i < 100; i++) {
         start_init = __rdtsc();
+        next_state(strumok, false);
         fin_init = __rdtsc();
         time_values[i] = (fin_init - start_init) / CPU_FREQ; //result nanoseconds 10^(-9)
         fprintf(f_stream, "%u", time_values[i]);
