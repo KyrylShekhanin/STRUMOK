@@ -268,9 +268,14 @@ int main()
     strumok.Init_Vec[2] = 3;
     strumok.Init_Vec[3] = 4;
 
-    strumok.KeySize = 32;
+    strumok.KeySize = 64;
 
-    strumok.Key[3] = 0x8000000000000000;
+
+    strumok.Key[7] = 0x8000000000000000;
+    strumok.Key[6] = 0x0000000000000000;
+    strumok.Key[5] = 0x0000000000000000;
+    strumok.Key[4] = 0x0000000000000000;
+    strumok.Key[3] = 0x0000000000000000;
     strumok.Key[2] = 0x0000000000000000;
     strumok.Key[1] = 0x0000000000000000;
     strumok.Key[0] = 0x0000000000000000;
@@ -283,6 +288,8 @@ int main()
     for (int i = 0; i < 100; i++) {
         start_init = __rdtsc();
         initialization(strumok);
+        next_state(strumok, false);
+        uint64_t Z1 = stream(strumok);
         fin_init = __rdtsc();
         time_values[i] = (fin_init - start_init) / CPU_FREQ; //result nanoseconds 10^(-9)
         fprintf(f_init, "%u", time_values[i]);
@@ -291,8 +298,6 @@ int main()
 
     for (int i = 0; i < 100; i++) {
         start_init = __rdtsc();
-        uint64_t Z1 = stream(strumok);
-        next_state(strumok, false);
         fin_init = __rdtsc();
         time_values[i] = (fin_init - start_init) / CPU_FREQ; //result nanoseconds 10^(-9)
         fprintf(f_stream, "%u", time_values[i]);
@@ -362,7 +367,22 @@ int initialization(STRUMOK_DATA &state)
         state.a[14] = state.Key[1];
         state.a[15] = ~state.Key[0];
     } else if (state.KeySize == 64) {
-
+        state.a[0] = state.Key[7] ^ state.Init_Vec[0];
+        state.a[1] = state.Key[6];
+        state.a[2] = state.Key[5];
+        state.a[3] = state.Key[4] ^ state.Init_Vec[1];
+        state.a[4] = state.Key[3];
+        state.a[5] = state.Key[2] ^ state.Init_Vec[2];
+        state.a[6] = state.Key[1];
+        state.a[7] = ~state.Key[0];
+        state.a[8] = state.Key[4] ^ state.Init_Vec[3];
+        state.a[9] = ~state.Key[6];
+        state.a[10] = state.Key[5];
+        state.a[11] = ~state.Key[7];
+        state.a[12] = state.Key[3];
+        state.a[13] = state.Key[2];
+        state.a[14] = ~state.Key[1];
+        state.a[15] = state.Key[0];
     }
 
     state.b[0] = 0;
@@ -383,7 +403,7 @@ int next_state(STRUMOK_DATA &state, bool mod)
 
     UINT ftmps15 = state.a[15];
 
-    if (!INIT_MOD) {
+    if (!mod) {
         state.a[15] = a_mul(state.a[0]) ^ state.a[13] ^ ainv_mul(state.a[11]);
     } else {
         state.a[15] = a_mul(state.a[0]) ^ state.a[13] ^ ainv_mul(state.a[11])
